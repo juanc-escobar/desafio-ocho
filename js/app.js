@@ -1,29 +1,21 @@
-// Declaracion de la clase constructora Jean, con el atributo id para identificar cada producto y el atributo cart para sumar cantidades anadidas al carrito. 
+// Creacion de funcion autoinvocada para mostrar los productos llamados desde la API
 
-class Jean {
-    constructor (id,categoria, titulo, descripcion, precio,cart,img) {
-        this.id = id
-        this.categoria = categoria
-        this.titulo = titulo
-        this.descripcion = descripcion
-        this.precio = precio
-        this.cart = cart
-        this.img = img
-    }
-}
-
-window.localStorage.removeItem("nombreUsuarioStorage")
-
-// Declaracion de variables 
-
-const productos = [];
-let carrito = [];
-let totalCompra = 0;
-let itemsCarrito = 0;
-
+( async () => {
+    const productsData = await fetch('https://fakestoreapi.com/products')
+    const products = await productsData.json()
+    cardConntenedor.innerHTML = ""
+    const head = document.createElement("div")
+    head.classList.add("titulos")
+    head.innerHTML = `    
+    <h1 class="titulo-principal">Tienda de Ropa Online</h1>
+    <p class="texto-postitulo">Bienvenido a nuestra tienda de ropa online con articulos exclusivos!</p>
+    <h2 class="titulo-secundario">Catalogo de Productos</h2>
+    `
+    titleHead.appendChild(head)
+    displayProducts(products)
+})();
 
 // Se agrega mensaje de bienvenida 
-
 
 (async () => {
     let {value: nombreUsuario} = await Swal.fire ({
@@ -41,6 +33,7 @@ let itemsCarrito = 0;
             popup: "swal-popup"
         }
     })
+
     if (nombreUsuario) {
         localStorage.setItem('nombreUsuarioStorage', JSON.stringify(nombreUsuario))
         Swal.fire ({
@@ -55,7 +48,10 @@ let itemsCarrito = 0;
                 popup: "swal-popup"
             }
         })
-    } else {
+
+    } 
+    
+    else {
         nombreUsuario = "Invitado"
         localStorage.setItem('nombreUsuarioStorage', JSON.stringify(nombreUsuario))
         Swal.fire ({
@@ -71,98 +67,66 @@ let itemsCarrito = 0;
             }
         })
     }
+
 })()
 
-
-
-
-window.localStorage.removeItem("carritoStorage")
-window.localStorage.removeItem("totalCompraStorage")
-
-// Creacion de objetos y envio de objetos a el arreglo de productos. 
-
-const jeanSlimfit = new Jean (1,"jeans","Jean Slimfit","Jean elastico slimfit color azul",100,1,"./assets/slimfit.webp"); 
-const jeanRegularfit = new Jean (2,"jeans","Jean Regularfit","Jean resistente regularfit negro",120,1,"./assets/regularfit.webp");
-const jeanWidefit = new Jean (3,"jeans","Jean Widefit","Jean comodo widefit color azul",150,1,"./assets/widefit.webp");
-
-productos.push(jeanSlimfit, jeanRegularfit, jeanWidefit)
-
-const copyProductos = [...productos]; // Sugar Syntax Spread Operator (se realiza una copia del array productos para evitar modificar los productos originales de  la "base de datos")
 
 // Creacion de contenedores principales 
 
 const cardConntenedor = document.getElementById("card-contenedor")
 const facturaConntenedor = document.getElementById("factura-contenedor")
 const cartConntenerdor = document.getElementById("cart")
+const menCategory = document.getElementById("men")
+const womenCategory = document.getElementById("women")
+const jeweleryCategory = document.getElementById("jewelery")
+const electronicsCategory = document.getElementById("electronics")
+const titleHead = document.getElementById("title-head")
 
-// se crean un algoritmo para mostrar los productos y un event listener con click sobre el boton agregar. 
+//Declaracion de variables 
 
-copyProductos.forEach((producto) => {
-    let {id,titulo, descripcion, precio,img} = producto // Sugar Syntax Desestructuracion 
-    const mostrarProductos = document.createElement("div")
-    mostrarProductos.classList.add("card")
-    mostrarProductos.innerHTML = `
-    <img class="card__img" src="${img}" alt="" />
-    <h3 class="card__titulo">${titulo}</h3>
-    <p class="card__descripcion">${descripcion}</p>
-    <p class="card__precio">$ ${precio}</p>
-    <button id="${id}" class="card__btn">Agregar</button>
-    `
-    cardConntenedor.appendChild(mostrarProductos)
+let carrito = [];
+let totalCompra = 0;
+let itemsCarrito = 0;
 
-    const agregar = document.getElementById(id)
-    agregar.addEventListener("click", () => {
-    agregarCarrito(id)
-    })
-})
+//Se crea la funcion encargada de mostrar los productos 
 
-// se crea una funcion para mostrat el contador de productos en el carrito. 
-
-const actualizarCarrito = () => {
-    cart.innerHTML = ""
-        const span = document.createElement("span")
-        span.classList.add("counter")
-        span.innerHTML = `${itemsCarrito}`
-        cart.appendChild(span)
-    }
-
-// se crea una funcion para agregar los productos al carrito y evitar duplicados. 
-
-const agregarCarrito = (productoId) => {
-    let productoSeleccionado = copyProductos.find((p) => p.id === productoId)
-    if (carrito.find((p)=> p.id === productoSeleccionado.id)){
-        productoSeleccionado.cart++ // Sugar Syntax Optimizacion ++
-        totalCompra = totalCompra + productoSeleccionado.precio
-        itemsCarrito= carrito.reduce((acumulator, actual) => {
-            return acumulator + actual.cart;
-        }, 0)
-        // se envian los productos del carrito y el valor total de compra al storage para poder utilizarlos en la pagina del checkout
-        localStorage.setItem('carritoStorage', JSON.stringify(carrito))
-        localStorage.setItem('totalCompraStorage', JSON.stringify(totalCompra))
-        actualizarCarrito()
-         // Se agrega notificacion al agregar producto
-        Swal.fire({
-        text: 'Agregaste un producto al carrito',
-        timer: 1000,
-        showConfirmButton:false,
-        icon: 'success',
-        position: "top-end",
-        customClass: {
-            popup: "swal-popup"
-        }
+function displayProducts(products) {
+    cardConntenedor.innerHTML = ""
+    facturaConntenedor.innerHTML = ""
+    products.forEach((element) => {
+            const mostrarProductos = document.createElement("div")
+            mostrarProductos.classList.add("card")
+            mostrarProductos.innerHTML = `
+            <img class="card__img" src="${element.image}" alt="" />
+            <h3 class="card__titulo">${element.title}</h3>
+        <p class="card__descripcion">${element.description}</p>
+        <p class="card__precio">$ ${element.price}</p>
+        <button id="${element.id}" class="card__btn">Agregar</button>
+        `
+        cardConntenedor.appendChild(mostrarProductos)
+    
+        const agregar = document.getElementById(element.id)
+        agregar.addEventListener("click", () => {
+            agregarCarrito(element.id)
         })
-    } else {
-        carrito.push(productoSeleccionado)
-        totalCompra = totalCompra + productoSeleccionado.precio
-        itemsCarrito= carrito.reduce((acumulator, actual) => {
-            return acumulator + actual.cart;
-        }, 0)
-        // se envian los productos del carrito y el valor total de compra al storage para poder utilizarlos en la pagina del checkout
-        localStorage.setItem('carritoStorage', JSON.stringify(carrito))
-        localStorage.setItem('totalCompraStorage', JSON.stringify(totalCompra))
-        actualizarCarrito( )
-        // Se agrega notificacion al agregar producto
-        Swal.fire({
+    })
+
+    //Se crea la funcion encargada de agregar los productos al carrito
+
+    const agregarCarrito = (productoId) => {
+        let productoSeleccionado = products.find((p) => p.id === productoId)
+        if (carrito.find((p)=> p.id === productoSeleccionado.id)){
+            productoSeleccionado.cart++ // Sugar Syntax Optimizacion ++
+            totalCompra = totalCompra + productoSeleccionado.price
+            itemsCarrito= carrito.reduce((acumulator, actual) => {
+                return acumulator + actual.cart;
+            }, 0)
+            // se envian los productos del carrito y el valor total de compra al storage para poder utilizarlos en la pagina del checkout
+            localStorage.setItem('carritoStorage', JSON.stringify(carrito))
+            localStorage.setItem('totalCompraStorage', JSON.stringify(totalCompra))
+            actualizarCarrito()
+            // Se agrega notificacion al agregar producto
+            Swal.fire({
             text: 'Agregaste un producto al carrito',
             timer: 1000,
             showConfirmButton:false,
@@ -171,10 +135,44 @@ const agregarCarrito = (productoId) => {
             customClass: {
                 popup: "swal-popup"
             }
-        })
+            })
+        }   
+        
+        else {
+            carrito.push(productoSeleccionado)
+            totalCompra = totalCompra + productoSeleccionado.price
+            productoSeleccionado.cart = 1
+            itemsCarrito= carrito.reduce((acumulator, actual) => {
+                return acumulator + actual.cart;
+            }, 0)
+            // se envian los productos del carrito y el valor total de compra al storage para poder utilizarlos en la pagina del checkout
+            localStorage.setItem('carritoStorage', JSON.stringify(carrito))
+            localStorage.setItem('totalCompraStorage', JSON.stringify(totalCompra))
+            actualizarCarrito( )
+            // Se agrega notificacion al agregar producto
+            Swal.fire({
+                text: 'Agregaste un producto al carrito',
+                timer: 1000,
+                showConfirmButton:false,
+                icon: 'success',
+                position: "top-end",
+                customClass: {
+                    popup: "swal-popup"
+                }
+            })
+        }
     }
 
-    console.log(itemsCarrito)
+    //Se crea la funcion encargada de actualizar el icono del carrito de compras
+
+    const actualizarCarrito = () => {
+        cart.innerHTML = ""
+        const span = document.createElement("span")
+        span.classList.add("counter")
+        span.innerHTML = `${itemsCarrito}`
+        cart.appendChild(span)
+    }
+
 }
 
 // se agrega un event listener para cuando den click en el carrito este los lleve a la pagina de checkout. 
@@ -200,7 +198,9 @@ checkOut.addEventListener("click", () => {
                 popup: "swal-popup"
             }
         })
-    } else {
+    } 
+
+    else {
         Swal.fire ({
             title: `${nombreUsuario}`,
             text: "💖Gracias por tu compra💖",
@@ -213,10 +213,87 @@ checkOut.addEventListener("click", () => {
                 title: "swal-title",
                 popup: "swal-popup"
             }
-        }).then((result) => {
+        })
+    
+        .then((result) => {
+
+            // Se crea la funcion reciboCompra para mostrar el total de los productos comprados.
+
             if (result.isConfirmed) {
-              window.location.assign("checkout.html")
+                const reciboCompra = () => {
+                    titleHead.innerHTML = ""
+                    cardConntenedor.innerHTML = ""
+                    facturaConntenedor.innerHTML = ""
+                    const articulosCarrito = document.createElement("h2")
+                    articulosCarrito.classList.add("titulos-seccion")
+                    articulosCarrito.innerHTML = `Articulos Seleccionados`
+                    facturaConntenedor.appendChild(articulosCarrito)
+                    carrito.forEach((producto) => {
+                        const div = document.createElement("div")
+                        div.classList.add("factura")
+                        div.innerHTML = `
+                        <img src="${producto.image}" alt="producto" class="factura__img">
+                        <h3 class="factura-titulo">${producto.title}</h3>
+                        <p id="contador" class="factura__cantidad">Cantidad: ${producto.cart}</p>
+                        <p class="factura__precio">Valor Unidad: $ ${producto.price}</p>
+                        `
+                        facturaConntenedor.appendChild(div)
+                    })
+                    
+                    // se calcula y muestra el total de la compra. 
+                    
+                    let impuestos = totalCompra * 0.19
+                    let envio = Math.floor(Math.random()*20)
+                    let granTotal = totalCompra + impuestos + envio
+                    const divtotal = document.createElement("div")
+                    divtotal.classList.add("total")
+                    divtotal.innerHTML = `
+                    <section class="total">
+                    <h2 class="titulos-seccion"> Total Compra </h2>
+                    <p class="txt-center padd-min"> Compra total: $ ${totalCompra} USD </p>
+                    <p class="txt-center padd-min"> Impuestos: $ ${impuestos} USD </p>
+                    <p class="txt-center padd-min"> Envio: $ ${envio} USD </p>
+                    <p class="txt-center padd-min bold"> Total a Pagar: $ ${granTotal} USD </p>
+                    </section>
+                    `
+                    facturaConntenedor.appendChild(divtotal)
+                }
+                
+                reciboCompra();
+
             }
         })
     }
 })
+
+
+// Se crean los filtros por categoria
+
+
+menCategory.onclick = async () => {
+const productsData = await fetch(`https://fakestoreapi.com/products/category/men's clothing`)
+const products = await productsData.json()
+titleHead.innerHTML = ""
+displayProducts(products)
+}
+
+womenCategory.onclick = async () => {
+    const productsData = await fetch(`https://fakestoreapi.com/products/category/women's clothing`)
+    const products = await productsData.json()
+    titleHead.innerHTML = ""
+    displayProducts(products)
+}
+
+jeweleryCategory.onclick = async () => {
+    const productsData = await fetch(`https://fakestoreapi.com/products/category/jewelery`)
+    const products = await productsData.json()
+    titleHead.innerHTML = ""
+    displayProducts(products)
+}
+
+electronicsCategory.onclick = async () => {
+    const productsData = await fetch(`https://fakestoreapi.com/products/category/electronics`)
+    const products = await productsData.json()
+    titleHead.innerHTML = ""
+    displayProducts(products)
+}
